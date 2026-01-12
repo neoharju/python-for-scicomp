@@ -20,31 +20,33 @@ NumPy
    exercises at the end in that case.
 
 
-
-So, we already know about python lists, and that we can put all kinds of things in there.
-But in scientific usage, lists are often not enough. They are slow and
-not very flexible.
+NumPy is the most used library for scientific computing.
+Even if you are not using it directly, chances are high that some library uses it in the background.
+NumPy provides the high-performance multidimensional array object and tools to use it.
 
 .. highlight:: python
 
 What is an array?
 -----------------
 
-For example, consider ``[1, 2.5, 'asdf', False, [1.5, True]]`` -
-this is a Python list but it has different types for every
-element.  When you do math on this, every element has to be handled separately.
+So, we already know about python lists, and that we can put different types of
+data in the same list. For example, consider
+``[1, 2.5, 'asdf', False, [1.5, True]]``.
+This is a Python list but it has different types for every element.
+This makes them very flexible, but this comes at a cost: if we want to do
+something to each element in the list, for example "add 1", we need to consider
+each element one-by-one, because "add 1" means something different if the item
+is a number then when it is a string, or a sub-list. In scientific usage, we
+want to be able to quickly perform operations on large groups of elements at
+once, which is what NumPy arrays are optimized for.
 
-NumPy is the most used library for scientific computing. 
-Even if you are not using it directly, chances are high that some library uses it in the background.
-NumPy provides the high-performance multidimensional array object and tools to use it. 
-
-An array is a 'grid' of values, with all the same types. It is indexed by tuples of
+An array is a 'grid' of values, with all the same type. It is indexed by tuples of
 non negative indices and provides the framework for multiple
 dimensions.  An array has:
 
 * :ref:`dtype <arrays.dtypes>` - data type.  Arrays always contain one type
 * :term:`shape` - shape of the data, for example ``3×2`` or ``3×2×500`` or even
-  ``500`` (one dimensional) or ``[]`` (zero dimensional).
+  ``500`` (one dimensional) or ``()`` (zero dimensional).
 * :attr:`data <numpy.ndarray.data>` - raw data storage in memory.  This can be passed to C or
   Fortran code for efficient calculations.
 
@@ -191,14 +193,32 @@ Exercises 2
 
 .. challenge:: Exercises: Numpy-2
 
-   - **Matrix multiplication** What is the difference between :data:`numpy.multiply` and :func:`numpy.dot` ? Try it.
-   - **Axis** What is the difference between :func:`np.sum(axis=1) <numpy.sum>` vs
-     :func:`np.sum(axis=0) <numpy.sum>` on a two-dimensional array? What if you leave out the axis parameter?
+   Create the following arrays:
+
+   .. code-block:: python
+
+      # 1-dimensional arrays
+      x = np.array([1, 10, 100])
+      # TODO: similar to `x`, create another 1-dimensional array with shape (3,)
+      # y = np.array(...)
+
+      # 2-dimensional arrays
+      a = np.array([[1, 2], [3, 4]])
+      # TODO: similar to `a`, create another 2-dimensional array with shape (2, 2)
+      # b = np.array(...)
+
+   - **Matrix multiplication** What is the difference between :data:`numpy.multiply` and :func:`numpy.dot` ? Try calling these functions
+     with either ``x, y`` (1D arrays) or ``a, b`` (2D arrays) as input and observe the behaviour.
+   - **Axis** What is the difference between :func:`np.sum(a, axis=1) <numpy.sum>` vs
+     :func:`np.sum(a, axis=0) <numpy.sum>` on a two-dimensional array? What if you leave out the axis parameter?
 
 
 .. solution:: Solutions: Numpy-2
 
-   - **Matrix multiplication** ``np.multiply`` does elementwise multiplication on two arrays, while ``np.dot`` enables matrix multiplication.
+   - **Matrix multiplication** ``np.multiply`` does elementwise multiplication on two arrays. The function ``np.dot`` enables:
+     - *dot product* and returns a scalar, when both input arrays are 1 dimensional
+     - *matrix multiplication* and returns back a 2-dimensional array, when both the input arrays are 2 dimensional
+     However, ``a @ b`` is preferred over ``np.dot(a, b)`` to express matrix multiplication.
    - **Axis** ``axis=1`` does the operation (here: ``np.sum``) over each row, while axis=0 does it over each column. If axis is left out, the sum of the full array is given.
 
 
@@ -248,18 +268,30 @@ Exercises 3
    ::
 
       a = np.eye(4)
-      b = a[:,0]
+      b = a[:, 0]
       b[0] = 5
 
-   - **View vs copy** Try out above code. How does ``a`` look like before ``b`` has changed and after? How could it be avoided?
+   Try out the above code. 
+
+   - How does ``a`` look like before ``b`` has changed and after? 
+   - How could it be avoided?
 
 .. solution:: Solution: Numpy-3
 
-   - **View vs copy** The change in ``b`` has also changed the array ``a``!
-     This is because ``b`` is merely a view of a part of array ``a``.  Both
-     variables point to the same memory. Hence, if one is changed, the other
-     one also changes. If you need to keep the original array as is, use
-     ``np.copy(a)``.
+   **View vs copy**: The change in ``b`` has also changed the array ``a``!
+   This is because ``b`` is merely a *view* or a *shallow copy* of a part of array ``a``.  Both
+   variables point to the same memory. Hence, if one is changed, the other
+   one also changes. 
+   
+   In this example, if you need to keep the original array as is, use
+   :func:`np.copy(a) <numpy.copy>` or ``np.copy(a[:, 0])``
+   to create a new *deep copy* of the whole or a slice of array respectively,
+   before updating ``b``.
+   
+   .. seealso::
+
+      NumPy's documentation on :numpy:ref:`quickstart.copies-and-views`
+     
 
 
 Types of operations
@@ -325,10 +357,10 @@ Exercises 4
 
    - **In-place addition** (advanced): Create an array of
      ``dtype='float'``, and an array of ``dtype='int'``.  Try to use the
-     int array is the output argument of the first two arrays.
+     int array as the output argument of the first two arrays.
 
    - **Output arguments and timing** Repeat the initial ``b = a **
-     2`` example using the output arguments and time it.  Can you make
+     2`` example using a ufunc and time it.  Can you make
      it even faster using the output argument?
 
 .. solution:: Solution: Numpy-4
@@ -337,22 +369,21 @@ Exercises 4
 
        x = np.array([1, 2, 3])
        id(x)                        # get the memory-ID of x
-       np.add(x, x, x)              # Third argument is output array
-       np.add(x, x, x)
+       np.add(x, x, out=x)          # Third argument is output array
+       np.add(x, x, out=x)
        print(x)
        id(x)                        # get the memory-ID of x
                                     # - notice  it is the same
 
-     You note that ``np.add()`` has a third argument that is the
-     output array (same as ``out=``), *and* the function returns that
-     same array.
+     Note that ``np.add()`` writes the result to the output array (``out=``)
+     *and* the function returns that same array.
 
 
    - **Output arguments and timing** In this case, on my computer, it was
      actually slower (this is due to it being such a small array!)::
 
-        a = np.arange(10000)
-	b = np.zeros(10000)
+        a = np.arange(10_000)
+	b = np.zeros(10_000)
 
      ::
 
@@ -361,6 +392,11 @@ Exercises 4
 
      This is a good example of why you always need to time things
      before deciding what is best.
+
+     Note: the ``_`` inside numbers is just for human readability and is
+     ignored by python.
+
+
 
 
 Linear algebra and other advanced math
@@ -465,10 +501,11 @@ Additional exercises
    5. Let's test those functions with few negative and positive values::
 
        a = np.array([-3.3, -2.5, -1.5, -0.75, -0.5, 0.5, 0.75, 1.5, 2.5, 3])
-       np.round(a)
-       np.ceil(a)
-       np.floor(a)
-       np.trun(a)
+       np.round(a)  # [-3. -2. -2. -1. -0.  0.  1.  2.  2.  3.]
+       np.ceil(a)  # [-3. -2. -1. -0. -0.  1.  1.  2.  3.  3.]
+       np.floor(a)  # [-4. -3. -2. -1. -1.  0.  0.  1.  2.  3.]
+       np.trunc(a)  # [-3. -2. -1. -0. -0.  0.  0.  1.  2.  3.]
+
 
    6. One solution is::
 

@@ -29,7 +29,7 @@ and objects from other Python files (modules). Now we will take it a step furthe
 
 - Collect related functions into modules (files).
 - Collect related modules into packages (we will show how).
-- Add a ``LICENSE`` file to your code
+- Add a ``LICENSE`` file to your code from `choosealicense.com <https://choosealicense.com>`__
   (see `Software Licensing and Open source explained with cakes <https://github.com/coderefinery/social-coding/blob/main/licensing-and-cakes.md>`__).
 - Write a ``README.md`` file describing what the code does and how to use it.
 - It is also recommended to `document your package <https://coderefinery.github.io/documentation/>`__.
@@ -44,29 +44,81 @@ These are the 3 files:
 
 .. literalinclude:: packaging-example-project/calculator/adding.py
    :caption: adding.py
+   :language: python
 
 .. literalinclude:: packaging-example-project/calculator/subtracting.py
    :caption: subtracting.py
+   :language: python
 
 .. literalinclude:: packaging-example-project/calculator/integrating.py
    :caption: integrating.py
+   :language: python
 
 We will add a fourth file:
 
 .. literalinclude:: packaging-example-project/calculator/__init__.py
    :caption: __init__.py
+   :language: python
 
 This ``__init__.py`` file will be the interface of our package/library.
 It also holds the package docstring and the version string.
 Note how it imports functions from the various modules using *relative imports*
 (with the dot).
 
+After that let's create a file called ``README.md`` to the project root
+that will describe our project to other people who might want to use it.
+
+
+.. literalinclude:: packaging-example-project/README.md
+   :caption: README.md
+   :language: markdown
+
+Now our folder should look something like this:
+
+.. code-block:: none
+
+   calculator_myname
+   ├── calculator
+   │   ├── adding.py
+   │   ├── __init__.py
+   │   ├── integrating.py
+   │   └── subtracting.py
+   └── README.md
+
+After this we need to create a file called
+`pyproject.toml <https://packaging.python.org/en/latest/guides/writing-pyproject-toml/>`__,
+which describes our package.
+To make this easier we'll use ``flit`` (which is already installed in the
+course environment) in a terminal to initialize it:
+
+.. code-block:: console
+
+   $ flit init
+   Module name [calculator]: calculator_myname
+   Author: Firstname Lastname
+   Author email: firstname.lastname@example.org
+   Home page: http://www.example.org
+   Choose a license (see http://choosealicense.com/ for more info)
+   1. MIT - simple and permissive
+   2. Apache - explicitly grants patent rights
+   3. GPL - ensures that code based on this is shared with the same terms
+   4. Skip - choose a license later
+   Enter 1-4: 1
+
+   Written pyproject.toml; edit that file to add optional extra info.
+
+``flit`` will ask us questions about your project and it create a
+``pyproject.toml`` into the project folder. The name of the package
+(Module name) should be something that is not already in use. In best
+case scenario it should be the same as the Python module name. In our
+case, let's use a different name and let's fix this later.
+
 This is how we will arrange the files in the project folder/repository:
 
 .. code-block:: none
    :emphasize-lines: 3-6
 
-   project-folder
+   calculator_myname
    ├── calculator
    │   ├── adding.py
    │   ├── __init__.py
@@ -88,26 +140,27 @@ the next section.
 Testing a local pip install
 ---------------------------
 
-To make our example package pip-installable we need to add one more file:
+The ``pyproject.toml`` specification tells Pip what our package is and
+what it should install. It currently looks like this:
 
-.. code-block:: none
-   :emphasize-lines: 9
+.. literalinclude:: packaging-example-project/pyproject.toml-partial
+   :caption: pyproject.toml
+   :language: toml
 
-   project-folder
-   ├── calculator
-   │   ├── adding.py
-   │   ├── __init__.py
-   │   ├── integrating.py
-   │   └── subtracting.py
-   ├── LICENSE
-   ├── README.md
-   └── pyproject.toml
 
-This is how ``pyproject.toml`` looks:
+Let's do couple of finishing touches to it. Because we have different names
+for the package and our module import, we'll add a section that specifies
+that.
+
+We also need to add the dependency to ``scipy``.
+
+After the changes our ``pyproject.toml`` looks like this:
+
 
 .. literalinclude:: packaging-example-project/pyproject.toml
    :caption: pyproject.toml
-   :emphasize-lines: 13-15
+   :emphasize-lines: 12-14,19-20
+   :language: toml
 
 Note how our package requires ``scipy`` and we decided to not pin the version
 here (see :ref:`version_pinning`).
@@ -116,31 +169,84 @@ Now we have all the building blocks to test a local pip install. This is a good
 test before trying to upload a package to PyPI or test-PyPI
 (see :ref:`pypi`)
 
+.. note::
+
+   Sometime you need to rely on unreleased, development versions as
+   dependencies and this is also possible. For example, to use the
+   latest ``xarray`` you could add::
+
+     dependencies = [
+          "scipy",
+          "xarray @ https://github.com/pydata/xarray/archive/main.zip"
+     ]
+
+   .. seealso::
+      - `pip requirement specifiers <https://pip.pypa.io/en/stable/reference/requirement-specifiers/>`__
+      - pyOpenSci tutorial on
+        `pyproject.toml metadata <https://www.pyopensci.org/python-package-guide/tutorials/pyproject-toml.html>`__
 
 
-Exercises 1
------------
+
+Exercise 1
+----------
 
 .. challenge:: Packaging-1
 
    To test a local pip install:
 
    - Create a new folder outside of our example project
-   - Create a new virtual environment (:ref:`dependency_management`)
+   - Create a new virtual environment and activate it (more on this in :ref:`dependency_management`)
+
+   .. hint:: To create and activate a virtual environment
+      :class: dropdown
+
+      .. tabs::
+
+         .. tab:: Unix/macOS
+
+             .. code-block:: bash
+
+                 python -m venv .venv
+                 source .venv/bin/activate
+                 which python
+
+         .. tab:: Windows
+
+             .. code-block:: bat
+
+                 python -m venv .venv
+                 .venv\Scripts\activate
+                 where python
+
    - Install the example package from the project folder
-     into the new environment: ``$ pip install /path/to/project-folder/``
+     into the new environment::
+
+        pip install --editable /path/to/project-folder/
+
    - Test the local installation:
 
    .. literalinclude:: packaging-example-project/test.py
 
+   - Make a change in the ``subtract`` function above such that it always
+     returns a float ``return float(x - y)``.
+
+   - Open a new Python console and test the following lines. Compare it with
+     the previous output.
+
+   .. literalinclude:: packaging-example-project/test_editable.py
 
 Sharing packages via PyPI
 -------------------------
 
+.. demo::
+
+   Most people will watch and observe this, due to the speed with which we will
+   move.
+
 Once we are able to pip-install the example package locally, we are ready for
 upload.
 
-We exercise by uploading to `test-PyPI <https://test.pypi.org/>`__, not the
+We exercise by uploading to test-PyPI_, not the
 real `PyPI <https://pypi.org/>`__, so that if we mess things up, nothing bad
 happens.
 
@@ -148,7 +254,9 @@ We need two more things:
 
 - We will do this using `Twine <https://twine.readthedocs.io/>`__ so you need
   to pip install that, too.
-- You need an account on `test-PyPI <https://test.pypi.org/>`__.
+- You need an account on test-PyPI_
+
+.. _test-PyPI: https://test.pypi.org/
 
 .. highlight:: console
 
@@ -156,22 +264,76 @@ Let's try it out. First we create the distribution package::
 
   $ python3 -m build
 
-We need twine::
-
-  $ pip install twine
+We need also have ``twine`` installed, but it is included in the course
+environment.
 
 And use twine to upload the distribution files to test-PyPI::
 
   $ twine upload -r testpypi dist/*
 
   Uploading distributions to https://test.pypi.org/legacy/
-  Enter your username:
-  Enter your password:
+  Enter your API token:
 
-Once this is done, create yet another virtual environment and try to install from test-PyPI (adapt "myname")::
 
-  $ pip install -i https://test.pypi.org/simple/ calculator-myname
+.. _Create API token: https://test.pypi.org/manage/account/token/
 
+.. note::
+
+   To generate an API token,  proceed to the `Create API token`_ page in test-PyPI.
+   You will be prompted for your password.
+
+   .. solution:: The long-version for finding the *Create API token* page
+
+      1. Log on to test-PyPI_ at https://test.pypi.org
+      2. In the top-right corner, click on the drop-down menu and click **Account settings** or
+         follow this `link <https://test.pypi.org/manage/account/#api-tokens>`__.
+      3. Scroll down to the section **API tokens** and click the button **Add API token**,
+         which opens up the
+         `Create API token`_ page.
+
+
+   #. Under **Token name** write something memorable.
+      It should remind you the *purpose*
+      or the *name of the computer*, such that when you are done
+      using it, you can safely delete it.
+   #. Under **Scope** select ``Entire account (all projects)``.
+   #. Click on **Create token**.
+   #. Click on **Copy token** once a long string which starts
+      with ``pypi-`` is generated.
+
+   Paste that token back into the terminal where ``twine upload ...`` is running and press ENTER.
+
+Once this is done, create yet another virtual environment and try to install from test-PyPI (adapt ``myname``).
+
+.. tabs::
+
+   .. tab:: Linux / macOS
+
+      .. code-block:: console
+         :emphasize-lines: 4-7
+
+          $ python3 -m venv venv-calculator
+          $ source venv-calculator/bin/activate
+          $ which python
+          $ python3 -m pip install \
+              -i https://test.pypi.org/simple/ \
+              --extra-index-url https://pypi.org/simple/ \
+              calculator_myname
+          $ deactivate
+
+   .. tab:: Windows
+
+      .. code-block:: console
+         :emphasize-lines: 4
+
+          $ python3 -m venv venv-calculator
+          $ venv-calculator\Scripts\activate
+          $ where python
+          $ python3 -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ calculator_myname
+          $ deactivate
+
+If you upload packages to PyPI or test PyPI often you can create an API token and
+`save it in the .pypirc file <https://packaging.python.org/en/latest/specifications/pypirc/#common-configurations>`__.
 
 Tools that simplify sharing via PyPI
 ------------------------------------
@@ -183,25 +345,40 @@ confuse too much. If you web-search this, you will also see that recently the
 trend goes towards using ``pyproject.toml`` as more general
 alternative to the previous ``setup.py``.
 
-There are at least two tools which try to make the packaging and PyPI interaction easier:
+There are at least five tools which try to make the packaging and PyPI interaction easier:
 
+- `uv <https://docs.astral.sh/uv/>`__
+- `PDM <https://pdm-project.org/>`__
+- `Hatch <https://hatch.pypa.io/latest/>`__
 - `Poetry <https://python-poetry.org/>`__
 - `Flit <https://flit.pypa.io/>`__
 
+Today, due to standards such as ``pyproject.toml`` and ``pylock.toml``, to specify the
+package metadata and dependency lock file respectively, the above are largely
+cross-compatible amongst each other and with ``pip``.
+
+.. figure:: https://www.pyopensci.org/python-package-guide/_images/python-package-tools-decision-tree.png
+   :alt: Flowchart to help decide on a packaging tool
+
+   Credits: pyOpenSci's Python Package Guide licensed CC-BY-SA 4.0
+
+   The properties of the project and your development requirements may determine which packaging
+   tool suits you. Use the above decision tree from pyOpenSci_ to help make that choice.
+
+
+.. _pyOpenSci: https://www.pyopensci.org/python-package-guide/package-structure-code/python-package-build-tools.html
 
 Building a conda package and share it
 -------------------------------------
 
-.. demo::
-
-   Most people will watch and observe this, due to speed which we will
-   move.
 
 .. callout:: Prerequisites
 
-  To create a conda package, `conda-build` package is required. You may install it with **Anaconda Navigator** or from the command line::
+  To generate a conda build recipe, the package ``grayskull`` and
+  to build it, the package ``conda-build`` are required.
+  You may install these with **Anaconda Navigator** or from the command line::
 
-    $ conda install conda-build
+    $ conda install -n base grayskull conda-build
 
 
 The simplest way for creating a conda package for your python script is to
@@ -209,32 +386,32 @@ first publish it in `PyPI <https://pypi.org/>`__ following the steps explained
 above.
 
 
-Building a python package with conda skeleton pypi
-***************************************************
+Building a python package with grayskull and conda-build
+********************************************************
 
 Once build, the conda package can be installed locally. For this example, we
 will use `runtest <https://pypi.org/project/runtest/>`__.  `runtest
 <https://github.com/bast/runtest>`__ is a numerically tolerant end-to-end test
 library for research software.
 
-1. Create pypi skeleton::
+1. Generate the *recipe* by executing (``grayskull`` or ``conda grayskull``)::
 
-      $ conda skeleton pypi runtest
+      $ conda grayskull pypi runtest
 
-   The command above will create a new folder called `runtest` containing a file `meta.yaml`, the conda recipe for `runtest`.
+   The command above will create a new folder called `runtest` containing a file `meta.yaml`,
+   the conda recipe for building the `runtest` package.
 
-2. Edit `meta.yaml` and update requirements:
+2. View the contents of `meta.yaml` and ensure requirements :
 
    .. code-block:: yaml
 
       requirements:
         host:
-          - pip
           - python
-          - flit
+          - flit-core >=2,<4
+          - pip
         run:
           - python
-          - flit
 
    In the requirements above, we specified what is required for the `host <https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html#host>`__ and for `running <https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html#run>`__  the package.
 
@@ -248,7 +425,7 @@ library for research software.
 
    Your package is now ready to be build with conda::
 
-     $ conda-build runtest
+     $ conda build runtest
 
 
    .. callout:: Conda package location
@@ -257,11 +434,15 @@ library for research software.
 
       .. code-block:: none
 
-	~/anaconda3/conda-bld/win-64/runtest-2.2.1-py38_0.tar.bz2
+         /home/username/miniforge3/conda-bld/noarch/runtest-2.3.4-py_0.tar.bz2
 
-      The prefix `~/anaconda3/` may be different on your machine and depending on your operating system (Linux, Mac-OSX or Windows) the sub-folder `win-64` differs too (for instance `linux-64` on Linux machines).
+      The prefix ``/home/username/miniforge3/`` may be different on your machine.
+      depending on your operating system (Linux, Mac-OSX or Windows). The sub-folder is named ``noarch`` since
+      it is a pure-python package and the recipe indicates the same.
 
-      The conda package we have created is specific to your platform (here `win-64`). It can be converted to other platforms using `conda convert <https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html#converting-a-package-for-use-on-all-platforms>`__.
+      If package contained compiled code then the sub-folder would have been named ``win-64`` or ``linux-64``.
+      It could then be converted to other platforms using
+      `conda convert <https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html#converting-a-package-for-use-on-all-platforms>`__.
 
 4. Check within new environment
 
@@ -286,24 +467,32 @@ library for research software.
 
 .. callout:: Building a conda package from scratch
 
-  It is possible to build a conda package from scratch without using conda skeleton. We recommend you to check the `conda-build documentation <https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html>`__ for more information.
+  It is possible to build a conda package from scratch without using conda grayskull.
+  We recommend you to check the
+  `conda-build documentation <https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs.html>`__
+  for more information.
 
 To be able to share and install your local conda package anywhere (on other platforms), you would need to upload it to a `conda channel <https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/channels.html>`__ (see below).
 
+Tools that simplify sharing conda packages
+------------------------------------------
+
+- `pixi <https://pixi.sh>`__ is package management tool to cover all features of conda, along with
+  ability to initialize and package new projects.
+- `rattler-build <https://rattler.build>`__ is a build tool which combines the functionalities of
+  ``conda grayskull``, ``conda build`` and allows you to also publish packages.
 
 
 Publishing a python package
 ***************************
 
-- Upload your package to *Anaconda.org*: see instructions `here
-  <https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs-skeleton.html#optional-uploading-packages-to-anaconda-org>`__.
-  Please note that you will have to create an account on Anaconda.
-
 - Upload your package to `conda-forge <https://conda-forge.org/>`__:
   conda-forge is a conda channel: it contains community-led collection of
   recipes, build infrastructure and distributions for the conda package
-  manager. Anyone can public conda packages to conda-forge if certain
-  `guidelines <https://conda-forge.org/docs/>`__ are respected.
+  manager. Anyone can
+  `publish conda packages to conda-forge <https://conda-forge.org/docs/maintainer/adding_pkgs/>`__
+  if certain
+  `guidelines <https://conda-forge.org/docs/maintainer/guidelines/>`__ are respected.
 
 - Upload your package to `bioconda <https://bioconda.github.io/>`_: bioconda is
   a very popular channel for the conda package manager specializing in

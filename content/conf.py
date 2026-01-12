@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Python for Scientific Computing'
-copyright = '2020-2023, The contributors'
+copyright = '2020-2024, The contributors'
 author = 'The contributors'
 github_user = 'AaltoSciComp'
 github_repo_name = 'python-for-scicomp'  # auto-detected from dirname if blank
@@ -40,8 +40,15 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx_aaltoscicomp_branding',
     'sphinxext.opengraph',
+    'sphinx_thebe',
 ]
 myst_enable_extensions = ['colon_fence']
+
+thebe_config = {
+   "selector": "div.highlight"
+}
+
+nb_execution_mode = "off"
 
 ogp_site_name = "Python for Scientific Computing"
 ogp_site_url = 'https://aaltoscicomp.github.io/python-for-scicomp/'

@@ -226,11 +226,7 @@ Exercises, multiprocessing
 
    .. solution::
 
-      See the finished notebook here:
-
-      .. toctree::
-
-	 parallel-pi-multiprocessing
+      See the finished notebook here :doc:`parallel-pi-multiprocessing`.
 
       You notice the version with ``ThreadPool`` is no faster, and
       probably takes even longer.  This is because this is a
@@ -432,7 +428,14 @@ Of course sometimes coupling languages is not about overcoming bottlenecks but
 about combining existing programs which have been written in different
 languages for whatever reason.
 
+Examples of scientific codes that combine Python and other languages:
 
+- The numerical toolkit `Runko <https://runko.readthedocs.io/>`__ for simulating
+  astrophysical plasmas. The code is written in C++17 and Python.
+- The quantum chemistry code `VeloxChem <https://veloxchem.org/>`__ is a Python
+  based program for spectroscopy calculations in high-performance computing
+  environments. The code is written in Python, C++, and has kernels in CUDA and
+  HIP for running on GPUs.
 
 Dask and task queues
 --------------------
@@ -502,9 +505,9 @@ See also
 * `Thinking about Concurrency, Raymond Hettinger
   <https://youtu.be/Bv25Dwe84g0>`__.  Good introduction to simple and
   safe concurrent code.
-* `Introduction to Numba and Cython <https://enccs.github.io/HPDA-Python/performance-boosting/>`__.
-* `More detailed exposition of parallel computing in Python <https://enccs.github.io/HPDA-Python/parallel-computing/>`__.
-* `Introduction to Dask for scalable analytics <https://enccs.github.io/HPDA-Python/dask/>`__.
+* `Introduction to Numba and Cython <https://enccs.github.io/hpda-python/performance-boosting/>`__.
+* `More detailed exposition of parallel computing in Python <https://enccs.github.io/hpda-python/parallel-computing/>`__.
+* `Introduction to Dask for scalable analytics <https://enccs.github.io/hpda-python/dask/>`__.
 
 .. keypoints::
 
